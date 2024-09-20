@@ -1,3 +1,2 @@
 # ACTAM
-
-######### project info
+project info
