@@ -1,2 +1,0 @@
-# ACTAM
-project info
