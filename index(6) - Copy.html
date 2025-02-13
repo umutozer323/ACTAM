@@ -1,0 +1,2453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Pedalboard</title>
+    <style>
+        /* GUITAR */
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            margin: 8px;
+            color: #fff;
+            background: linear-gradient(145deg, #0088ff, #0066cc);
+            border: none;
+            cursor: pointer;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(145deg, #0099ff, #0077dd);
+        }
+
+        button:disabled {
+            background: linear-gradient(145deg, #666, #444);
+            cursor: not-allowed;
+        }
+
+        /* PEDALBOARD */    
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .pedalboard {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            padding: 40px;
+            background: linear-gradient(145deg, #2a2a2a, #333);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            min-height: 350px;
+        }
+
+        .pedal {
+            width: 200px;
+            height: 300px;
+            background: linear-gradient(145deg, #3a3a3a, #444);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            color: #fff;
+            position: relative;
+            padding-top: 50px;
+            cursor: move;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            transition: transform 0.2s ease;
+        }
+
+        .pedal:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .pedal h2 {
+            position: absolute;
+            top: 15px;
+            width: 100%;
+            text-align: center;
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .distortion { background: linear-gradient(145deg, #e53935, #c62828); }
+        .delay { background: linear-gradient(145deg, #1976d2, #0d47a1); }
+        .eq { background: linear-gradient(145deg, #388e3c, #1b5e20); }
+        .phasor { background: linear-gradient(145deg, #fdd835, #f57f17); }
+
+        .knobs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 15px;
+            padding: 5px;
+        }
+
+        .knob {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .knob-circle {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(145deg, #222, #333);
+            border: 3px solid #000;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            transform-origin: 50% 50%;
+        }
+
+        .knob-circle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .knob-line {
+            width: 3px;
+            height: 20px;
+            background-color: #00e676;
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform-origin: bottom center;
+            box-shadow: 0 0 10px rgba(0, 230, 118, 0.5);
+        }
+
+        .value {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px 8px;
+            border-radius: 10px;
+        }
+
+        .on-off {
+            position: absolute;
+            bottom: 10px;  
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;  
+        }
+
+        .circle {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(145deg, #444, #333);
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+        }
+
+        .circle:hover {
+            background: linear-gradient(145deg, #00e676, #00c853);
+        }
+
+        .led {
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle at 40% 40%, #441111, #330000);
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            margin-top: 2px;  
+        }
+
+        .led.active {
+            background: radial-gradient(circle at 40% 40%, #ff0000, #cc0000);
+            box-shadow: 
+                0 0 10px rgba(255, 0, 0, 0.6),
+                0 0 20px rgba(255, 0, 0, 0.4),
+                0 0 30px rgba(255, 0, 0, 0.2);
+        }
+
+        /* EQ Slider Styles */
+        .eq-sliders {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-end;
+            margin: auto;  
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            position: absolute;  
+            top: 50%;          
+            left: 50%;        
+            transform: translate(-50%, -50%);  
+        }
+
+        .eq-slider {
+            width: 8px;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .slider-track {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #666, #444);
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 5px;
+        }
+
+        .slider-handle {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(145deg, #00e676, #00c853);
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+        }
+
+        .slider-handle:hover {
+            transform: translateX(-50%);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        .eq-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 9px;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+
+        .vertical-labels {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 9px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            margin: 0 -5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 120px;
+        }
+
+        .vertical-labels span {
+            transform-origin: center;
+            display: inline-block;
+            width: 15px;
+        }
+
+        .pedal-placeholder {
+            width: 250px;
+            height: 240px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 3px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            transition: none;
+        }
+
+        /* Visualizer canvas styling */
+        #visualizer {
+            width: 100%;
+            height: 100px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        #status {
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .pedal.dragging {
+            transition: none;
+            opacity: 0.9;
+            transform: scale(1.02);
+            position: absolute;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        
+        .phasor .knob-circle {
+            width: 40px;
+            height: 40px;
+        }
+
+        .phasor .knob-line {
+            height: 15px;
+            transform-origin: bottom center;
+        }
+
+        .phasor .knobs {
+            max-width: 200px;
+        }
+
+       
+        .eq-sliders {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-end;
+            margin-top: 5px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+        }
+
+        .eq-slider {
+            width: 8px;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .eq .on-off,
+        .phasor .on-off {
+            bottom: 10px;
+        }
+
+        .knob label {
+            font-size: 11px;
+            margin: 2px 0;
+        }
+
+        .value {
+            font-size: 10px;
+            padding: 2px 6px;
+        }
+
+        .pedal h2,
+        .pedal label,
+        .pedal .value,
+        .pedal span {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .reverb { background: linear-gradient(145deg, #7d3c98, #9b59b6); }
+
+        .reverb .knob-circle {
+            background: linear-gradient(145deg, #8e44ad, #9b59b6);
+            border: 2px solid #6c3483;
+        }
+
+        .reverb .on-off .circle {
+            background: #6c3483;
+            border: 2px solid #5b2c6f;
+        }
+
+        .reverb .led {
+            background: #e8daef;
+            box-shadow: 0 0 5px #e8daef;
+        }
+
+        .reverb .led.active {
+            background: #af7ac5;
+            box-shadow: 0 0 10px #af7ac5;
+        }
+
+        .reverb h2 {
+            color: #e8daef;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .reverb label,
+        .reverb .value,
+        .reverb span {
+            color: #e8daef;
+        }
+
+        .phaser .knobs {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .phaser .knob-row {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+        }
+
+        #tuner-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            color: #fff;
+        }
+
+        #note-display {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #frequency-display {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #00e676;
+        }
+
+        #cents-display {
+            width: 200px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 auto;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .optimal-zone {
+            position: absolute;
+            width: 20px;
+            height: 100%;
+            background: rgba(0, 230, 118, 0.2);
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 2px solid rgba(0, 230, 118, 0.5);
+            border-right: 2px solid rgba(0, 230, 118, 0.5);
+        }
+
+        #cents-bar {
+            width: 4px;
+            height: 100%;
+            background: #00e676;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: left 0.1s ease;
+        }
+
+        #frequency-trend {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+        }
+
+        /* Preset Styles */
+        .preset-controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .preset-controls input[type="text"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .preset-controls button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            background: #1976d2;
+            color: #fff;
+        }
+
+        .preset-controls select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .preset-controls button:hover {
+            background: #0d47a1;
+        }
+
+        .preset-controls button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .display-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .display-container button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            background: #1976d2;
+            color: #fff;
+        }
+
+        .display-container button:hover {
+            background: #0d47a1;
+        }
+
+        .display-container button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        /* Tuner Styles */
+        #tuner-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            color: #fff;
+        }
+
+        #note-display {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #frequency-display {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #00e676;
+        }
+
+        #cents-display {
+            width: 200px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 auto;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .optimal-zone {
+            position: absolute;
+            width: 20px;
+            height: 100%;
+            background: rgba(0, 230, 118, 0.2);
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 2px solid rgba(0, 230, 118, 0.5);
+            border-right: 2px solid rgba(0, 230, 118, 0.5);
+        }
+
+        #cents-bar {
+            width: 4px;
+            height: 100%;
+            background: #00e676;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: left 0.1s ease;
+        }
+
+        #frequency-trend {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+        }
+
+        #preset-list {
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: 1px solid #666;
+            background: #2a2a2a;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            width: 150px;
+        }
+
+        #preset-list option {
+            background: #2a2a2a;
+            color: #fff;
+            padding: 8px;
+        }
+
+        #preset-name {
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: 1px solid #666;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 14px;
+            width: 150px;
+        }
+
+        #preset-name::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        #save-preset, #load-preset, #delete-preset {
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            background: #1976d2;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        #save-preset:hover, #load-preset:hover, #delete-preset:hover {
+            background: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Online Pedalboard</h1>
+        <div class="control-buttons" style="margin-bottom: 20px;">
+            <button id="start-button">Start Audio</button>
+            <button id="record-button" disabled>Record</button>
+            <button id="stop-button" disabled>Stop Recording</button>
+            <button id="play-button" disabled>Play Recording</button>
+            <button id="live-playback-button" disabled>Enable Live Playback</button>
+        </div>
+
+        <div class="display-container">
+            <!-- Simple buttons for switching views -->
+            <div style="margin-bottom: 20px;">
+                <button onclick="switchDisplay('visualizer')" style="padding: 8px 15px; margin: 0 5px; border-radius: 5px; border: none; cursor: pointer; background: #1976d2; color: #fff;">
+                    Visualizer
+                </button>
+                <button onclick="switchDisplay('tuner')" style="padding: 8px 15px; margin: 0 5px; border-radius: 5px; border: none; cursor: pointer; background: #666; color: #fff;">
+                    Tuner
+                </button>
+                <button onclick="switchDisplay('preset')" style="padding: 8px 15px; margin: 0 5px; border-radius: 5px; border: none; cursor: pointer; background: #666; color: #fff;">
+                    Presets
+                </button>
+            </div>
+
+            <div id="visualizer-panel">
+                <canvas id="visualizer"></canvas>
+            </div>
+
+            <div id="tuner-panel" style="display: none;">
+                <div id="tuner-display">
+                    <div id="note-display" style="font-size: 48px; color: #fff;">--</div>
+                    <div id="frequency-display" style="font-size: 24px; color: #00e676;">-- Hz</div>
+                    <div id="cents-display">
+                        <div class="optimal-zone"></div>
+                        <div id="cents-bar"></div>
+                    </div>
+                    <div id="frequency-trend">--</div>
+                </div>
+            </div>
+
+            <div id="preset-panel" style="display: none;">
+                <div class="preset-controls">
+                    <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+                        <input type="text" id="preset-name" placeholder="Preset Name">
+                        <button id="save-preset">Save Preset</button>
+                        <select id="preset-list">
+                            <option value="">Select Preset</option>
+                        </select>
+                        <button id="load-preset">Load</button>
+                        <button id="delete-preset">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p id="status">Status: Ready</p>
+        <div id="latency-display" style="color: rgba(255, 255, 255, 0.8); text-align: center; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 10px; margin-top: 10px;">
+            Latency: <span id="latency-value">-- ms</span>
+        </div>
+    </div>
+
+    <div class="pedalboard">
+        <!-- Distortion Pedal -->
+        <div class="pedal distortion">
+            <h2>Distortion</h2>
+            <div class="knobs">
+                <div class="knob" data-label="Gain" data-min="0" data-max="400" data-step="10" data-default="200">
+                    <div class="knob-circle">
+                        <div class="knob-line"></div>
+                    </div>
+                    <label>Gain</label>
+                    <div class="value">Value: <span id="knob-value">200</span></div>
+                </div>
+                <div class="knob" data-label="Level" data-min="0" data-max="12" data-step="0.1" data-default="6">
+                    <div class="knob-circle">
+                        <div class="knob-line"></div>
+                    </div>
+                    <label>Level</label>
+                    <div class="value">Value: <span id="knob-value">6</span></div>
+                </div>
+                <div class="knob" data-label="Tone" data-min="100" data-max="5000" data-step="50" data-default="2550">
+                    <div class="knob-circle">
+                        <div class="knob-line"></div>
+                    </div>
+                    <label>Tone</label>
+                    <div class="value">Value: <span id="knob-value">2550</span></div>
+                </div> 
+            </div>
+            <div class="on-off">
+                <div class="circle"></div>
+                <!--<span>On/Off</span>-->
+                <div class="led"></div>
+            </div>
+        </div>
+        <!-- Delay Pedal -->
+        <div class="pedal delay">
+            <h2>Delay</h2>
+            <div class="knobs">
+                <div class="knob" data-label="Fx Level" data-min="0" data-max="100" data-step="1" data-default="50">
+                    <div class="knob-circle">
+                        <div class="knob-line"></div>
+                    </div>
+                    <label>Fx Level</label>
+                    <div class="value">Value: <span id="knob-value">50</span></div>
+                </div>
+                <div class="knob" data-label="Delay" data-min="0" data-max="100" data-step="1" data-default="50">
+                    <div class="knob-circle">
+                        <div class="knob-line"></div>
+                    </div>
+                    <label>Delay</label>
+                    <div class="value">Value: <span id="knob-value">50</span></div>
+                </div>
+                <div class="knob" data-label="Feedback" data-min="0" data-max="100" data-step="1" data-default="50">
+                    <div class="knob-circle">
+                        <div class="knob-line"></div>
+                    </div>
+                    <label>Feedback</label>
+                    <div class="value">Value: <span id="knob-value">50</span></div>
+                </div>
+            </div>
+            <div class="on-off">
+                <div class="circle"></div>
+                <!--<span>On/Off</span>-->
+                <div class="led"></div>
+            </div>
+        </div>
+        <!-- EQ Pedal -->
+        <div class="pedal eq">
+            <h2>EQ</h2>
+            <div class="eq-sliders">
+                <div class="eq-slider">
+                    <div class="slider-track"></div>
+                    <div class="slider-handle" style="bottom: 50%;"></div>
+                    <div class="eq-label">100Hz</div>
+                </div>
+                <div class="eq-slider">
+                    <div class="slider-track"></div>
+                    <div class="slider-handle" style="bottom: 50%;"></div>
+                    <div class="eq-label">200Hz</div>
+                </div>
+                <div class="eq-slider">
+                    <div class="slider-track"></div>
+                    <div class="slider-handle" style="bottom: 50%;"></div>
+                    <div class="eq-label">400Hz</div>
+                </div>
+                <div class="vertical-labels">
+                    <span>+18</span>
+                    <span>+9</span>
+                    <span>0</span>
+                    <span>-9</span>
+                    <span>-18</span>
+                </div>
+                <div class="eq-slider">
+                    <div class="slider-track"></div>
+                    <div class="slider-handle" style="bottom: 50%;"></div>
+                    <div class="eq-label">800Hz</div>
+                </div>
+                
+                <div class="eq-slider">
+                    <div class="slider-track"></div>
+                    <div class="slider-handle" style="bottom: 50%;"></div>
+                    <div class="eq-label">1.6kHz</div>
+                </div>
+                <div class="eq-slider">
+                    <div class="slider-track"></div>
+                    <div class="slider-handle" style="bottom: 50%;"></div>
+                    <div class="eq-label">3.2kHz</div>
+                </div>
+            </div>
+            <div class="on-off">
+                <div class="circle"></div>
+                <!--<span>On/Off</span>-->
+                <div class="led"></div>
+            </div>
+        </div>
+    
+        <!-- Phaser Pedal -->
+        <div class="pedal phaser">
+            <h2>Phaser</h2>
+            <div class="knobs">
+                <div class="knob-row">
+                    <div class="knob" data-label="Speed" data-min="0" data-max="100" data-step="1" data-default="50">
+                        <div class="knob-circle">
+                            <div class="knob-line"></div>
+                        </div>
+                        <label>Speed</label>
+                        <div class="value">Value: <span>50</span></div>
+                    </div>
+                    <div class="knob" data-label="Depth" data-min="0" data-max="100" data-step="1" data-default="50">
+                        <div class="knob-circle">
+                            <div class="knob-line"></div>
+                        </div>
+                        <label>Depth</label>
+                        <div class="value">Value: <span>50</span></div>
+                    </div>
+                </div>
+                <div class="knob-row">
+                    <div class="knob" data-label="Feedback" data-min="0" data-max="100" data-step="1" data-default="50">
+                        <div class="knob-circle">
+                            <div class="knob-line"></div>
+                        </div>
+                        <label>Feedback</label>
+                        <div class="value">Value: <span>50</span></div>
+                    </div>
+                    <div class="knob" data-label="Mix" data-min="0" data-max="100" data-step="1" data-default="50">
+                        <div class="knob-circle">
+                            <div class="knob-line"></div>
+                        </div>
+                        <label>Mix</label>
+                        <div class="value">Value: <span>50</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="on-off">
+                <div class="circle"></div>
+                <!--<span>On/Off</span>-->
+                <div class="led"></div>
+            </div>
+        </div>
+        <!-- Reverb Pedal -->
+        <div class="pedal">
+            <h2>Reverb</h2>
+            <div class="knobs">
+                <div class="knob" data-label="Mix" data-min="0" data-max="100" data-step="1" data-default="30">
+                    <div class="knob-circle">
+                        <div class="knob-line"></div>
+                    </div>
+                    <label>Mix</label>
+                    <div class="value">Value: <span>30</span></div>
+                </div>
+                <div class="knob" data-label="Decay" data-min="0" data-max="100" data-step="1" data-default="50">
+                    <div class="knob-circle">
+                        <div class="knob-line"></div>
+                    </div>
+                    <label>Decay</label>
+                    <div class="value">Value: <span>50</span></div>
+                </div>
+                <div class="knob" data-label="Tone" data-min="0" data-max="100" data-step="1" data-default="50">
+                    <div class="knob-circle">
+                        <div class="knob-line"></div>
+                    </div>
+                    <label>Tone</label>
+                    <div class="value">Value: <span>50</span></div>
+                </div>
+            </div>
+            <div class="on-off">
+                <div class="circle"></div>
+                <!--<span>On/Off</span>-->
+                <div class="led"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.pedalboardApp = {
+            presetSystem: {
+                savePreset: function(name, settings) {
+                    const presets = this.getAllPresets();
+                    presets[name] = settings;
+                    localStorage.setItem('pedalboardPresets', JSON.stringify(presets));
+                    this.updatePresetList();
+                },
+
+                loadPreset: function(name) {
+                    const presets = this.getAllPresets();
+                    return presets[name];
+                },
+
+                deletePreset: function(name) {
+                    const presets = this.getAllPresets();
+                    delete presets[name];
+                    localStorage.setItem('pedalboardPresets', JSON.stringify(presets));
+                    this.updatePresetList();
+                },
+
+                getAllPresets: function() {
+                    const presetsJson = localStorage.getItem('pedalboardPresets');
+                    return presetsJson ? JSON.parse(presetsJson) : {};
+                },
+
+                updatePresetList: function() {
+                    const presetList = document.getElementById('preset-list');
+                    if (!presetList) return;
+                    
+                    const presets = this.getAllPresets();
+                    
+                    while (presetList.options.length > 1) {
+                        presetList.remove(1);
+                    }
+
+                    Object.keys(presets).forEach(name => {
+                        const option = new Option(name, name);
+                        presetList.add(option);
+                    });
+                },
+
+                getCurrentSettings: function() {
+                    const settings = {};
+                    
+                    document.querySelectorAll('.pedal').forEach(pedal => {
+                        const pedalName = pedal.querySelector('h2').textContent;
+                        const pedalSettings = {
+                            enabled: pedal.querySelector('.led').classList.contains('active'),
+                            knobs: {},
+                            sliders: {} 
+                        };
+
+                        pedal.querySelectorAll('.knob').forEach(knob => {
+                            const label = knob.dataset.label;
+                            const value = parseFloat(knob.querySelector('.value span').textContent);
+                            pedalSettings.knobs[label] = value;
+                        });
+
+                        pedal.querySelectorAll('.eq-slider').forEach(slider => {
+                            const handle = slider.querySelector('.slider-handle');
+                            const frequency = slider.querySelector('.eq-label').textContent;
+                            const position = parseFloat(handle.style.bottom || '50');
+                            pedalSettings.sliders[frequency] = position;
+                        });
+
+                        settings[pedalName] = pedalSettings;
+                    });
+
+                    return settings;
+                },
+
+                applySettings: function(settings) {
+                    Object.entries(settings).forEach(([pedalName, pedalSettings]) => {
+                        const pedal = Array.from(document.querySelectorAll('.pedal'))
+                            .find(p => p.querySelector('h2').textContent === pedalName);
+                        
+                        if (!pedal) return;
+
+                        const led = pedal.querySelector('.led');
+                        const circle = pedal.querySelector('.circle');
+                        if (pedalSettings.enabled) {
+                            led.classList.add('active');
+                            if (circle) circle.style.backgroundColor = '#00e676';
+                        } else {
+                            led.classList.remove('active');
+                            if (circle) circle.style.backgroundColor = '#eee';
+                        }
+
+                        Object.entries(pedalSettings.knobs || {}).forEach(([label, value]) => {
+                            const knob = Array.from(pedal.querySelectorAll('.knob'))
+                                .find(k => k.dataset.label === label);
+                            
+                            if (knob) {
+                                const valueDisplay = knob.querySelector('.value span');
+                                const knobLine = knob.querySelector('.knob-line');
+                                valueDisplay.textContent = value;
+
+                                const min = parseFloat(knob.dataset.min);
+                                const max = parseFloat(knob.dataset.max);
+                                const normalized = (value - min) / (max - min);
+                                const angle = normalized * 270 - 135;
+                                knobLine.style.transform = `rotate(${angle}deg)`;
+
+                                if (typeof updatePedalParameter === 'function') {
+                                    updatePedalParameter(pedal, label, value);
+                                }
+                            }
+                        });
+
+                        Object.entries(pedalSettings.sliders || {}).forEach(([frequency, position]) => {
+                            const slider = Array.from(pedal.querySelectorAll('.eq-slider'))
+                                .find(s => s.querySelector('.eq-label').textContent === frequency);
+                            
+                            if (slider) {
+                                const handle = slider.querySelector('.slider-handle');
+                                handle.style.bottom = `${position}%`;
+
+                                if (typeof updateEQBand === 'function') {
+                                    const dbValue = ((position - 50) / 50) * 18; 
+                                    updateEQBand(parseFloat(frequency), dbValue);
+                                }
+                            }
+                        });
+                    });
+
+                    if (typeof updateAudioChain === 'function') {
+                        updateAudioChain();
+                    }
+                }
+            },
+
+            initializePresetControls: function() {
+                const saveButton = document.getElementById('save-preset');
+                const loadButton = document.getElementById('load-preset');
+                const deleteButton = document.getElementById('delete-preset');
+                const presetNameInput = document.getElementById('preset-name');
+                const presetList = document.getElementById('preset-list');
+                const statusText = document.getElementById('status');
+
+                if (!saveButton || !loadButton || !deleteButton || !presetNameInput || !presetList || !statusText) {
+                    console.error('Missing preset control elements');
+                    return;
+                }
+
+                this.presetSystem.updatePresetList();
+
+                saveButton.onclick = () => {
+                    const name = presetNameInput.value.trim();
+                    if (name) {
+                        const settings = this.presetSystem.getCurrentSettings();
+                        this.presetSystem.savePreset(name, settings);
+                        presetNameInput.value = '';
+                        statusText.textContent = `Status: Preset "${name}" saved`;
+                    } else {
+                        statusText.textContent = 'Status: Please enter a preset name';
+                    }
+                };
+
+                loadButton.onclick = () => {
+                    const name = presetList.value;
+                    if (name) {
+                        const settings = this.presetSystem.loadPreset(name);
+                        if (settings) {
+                            this.presetSystem.applySettings(settings);
+                            statusText.textContent = `Status: Preset "${name}" loaded`;
+                        }
+                    }
+                };
+
+                deleteButton.onclick = () => {
+                    const name = presetList.value;
+                    if (name) {
+                        this.presetSystem.deletePreset(name);
+                        statusText.textContent = `Status: Preset "${name}" deleted`;
+                    }
+                };
+            }
+        };
+
+        function switchDisplay(mode) {
+            console.log('Switching to:', mode);
+            
+            document.getElementById('visualizer-panel').style.display = 'none';
+            document.getElementById('tuner-panel').style.display = 'none';
+            document.getElementById('preset-panel').style.display = 'none';
+
+            document.getElementById(mode + '-panel').style.display = 'block';
+
+            const buttons = document.querySelectorAll('.display-container > div > button');
+            buttons.forEach(button => {
+                if (button.textContent.trim().toLowerCase() === mode || 
+                    (mode === 'preset' && button.textContent.trim().toLowerCase() === 'presets')) {
+                    button.style.background = '#1976d2';
+                } else {
+                    button.style.background = '#666';
+                }
+            });
+
+            if (mode === 'tuner') {
+                tunerEnabled = true;
+                if (window.audioNodes && window.audioNodes.sourceNode) {
+                    if (!tunerAnalyzer) {
+                        tunerAnalyzer = audioContext.createAnalyser();
+                        tunerAnalyzer.fftSize = 4096;
+                    }
+                    
+                    window.audioNodes.sourceNode.connect(tunerAnalyzer);
+                    
+                    requestAnimationFrame(function updateTuner() {
+                        if (!tunerEnabled) return;
+                        
+                        const bufferLength = tunerAnalyzer.frequencyBinCount;
+                        const dataArray = new Float32Array(bufferLength);
+                        tunerAnalyzer.getFloatTimeDomainData(dataArray);
+                        
+                        const frequency = detectPitch(dataArray);
+                        if (frequency > 0) {
+                            updateTunerDisplay(frequency);
+                        }
+                        
+                        if (tunerEnabled) {
+                            requestAnimationFrame(updateTuner);
+                        }
+                    });
+                }
+            } else {
+                tunerEnabled = false;
+                if (window.audioNodes && window.audioNodes.sourceNode && tunerAnalyzer) {
+                    window.audioNodes.sourceNode.disconnect(tunerAnalyzer);
+                    updateAudioChain();
+                }
+            }
+
+            if (mode === 'preset') {
+                window.pedalboardApp.initializePresetControls();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            switchDisplay('visualizer');
+        });
+
+        let tunerEnabled = false;
+        let tunerAnalyzer = null;
+        let noteDisplay = null;
+        let frequencyDisplay = null;
+        let centsBar = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            noteDisplay = document.getElementById('note-display');
+            frequencyDisplay = document.getElementById('frequency-display');
+            centsBar = document.getElementById('cents-bar');
+            
+            if (!noteDisplay || !frequencyDisplay || !centsBar) {
+                console.error('Could not find all tuner display elements');
+            }
+        });
+
+        // GUITAR
+        const startButton = document.getElementById('start-button');
+        const recordButton = document.getElementById('record-button');
+        const stopButton = document.getElementById('stop-button');
+        const playButton = document.getElementById('play-button');
+        const livePlaybackButton = document.getElementById('live-playback-button');
+        const visualizerCanvas = document.getElementById('visualizer');
+        const statusText = document.getElementById('status');
+        const canvasCtx = visualizerCanvas.getContext('2d');
+
+        let audioContext;
+        let analyzerNode;
+        let dataArray;
+        let mediaRecorder;
+        let audioChunks = [];
+        let recordedAudio;
+        let sourceNode;
+        let livePlaybackEnabled = false;
+
+        let distortionNode = null;
+        let toneNode = null;
+        let levelNode = null;
+
+        let audioChain = {
+            distortion: {
+                nodes: null,
+                enabled: false,
+                create: function(audioContext) {
+                    const input = audioContext.createGain();
+                    const output = audioContext.createGain();
+                    const distortion = audioContext.createWaveShaper();
+                    const tone = audioContext.createBiquadFilter();
+                    const level = audioContext.createGain();
+                    
+                    distortion.curve = makeDistortionCurve(200);
+                    distortion.oversample = '4x';
+                    
+                    tone.type = 'lowpass';
+                    tone.frequency.value = 2550;
+                    
+                    level.gain.value = 1.0;
+                    
+                    input.connect(distortion);
+                    distortion.connect(tone);
+                    tone.connect(level);
+                    level.connect(output);
+                    
+                    return {
+                        input,
+                        output,
+                        distortion,
+                        tone,
+                        level
+                    };
+                },
+                updateParams: function(label, value) {
+                    if (!this.nodes) return;
+                    
+                    switch (label) {
+                        case 'Gain':
+                            this.nodes.distortion.curve = makeDistortionCurve(value);
+                            break;
+                        case 'Tone':
+                            this.nodes.tone.frequency.value = value;
+                            break;
+                        case 'Level':
+                            this.nodes.level.gain.value = value / 20; 
+                            break;
+                    }
+                }
+            },
+            delay: {
+                nodes: null,
+                enabled: false,
+                create: function(audioContext) {
+                    const input = audioContext.createGain();
+                    const output = audioContext.createGain();
+                    const delay = audioContext.createDelay(5.0);
+                    const feedback = audioContext.createGain();
+                    const wetGain = audioContext.createGain();
+                    const dryGain = audioContext.createGain();
+                    
+                    delay.delayTime.value = 0.3;
+                    feedback.gain.value = 0.3;
+                    wetGain.gain.value = 0.4;
+                    dryGain.gain.value = 0.6;
+                    
+                    input.connect(dryGain);
+                    input.connect(delay);
+                    delay.connect(wetGain);
+                    delay.connect(feedback);
+                    feedback.connect(delay);
+                    wetGain.connect(output);
+                    dryGain.connect(output);
+                    
+                    return {
+                        input,
+                        output,
+                        delay,
+                        feedback,
+                        wetGain,
+                        dryGain
+                    };
+                },
+                updateParams: function(label, value) {
+                    if (!this.nodes) return;
+                    
+                    switch (label) {
+                        case 'Fx Level':
+                            this.nodes.wetGain.gain.value = (value / 100) * 0.6;
+                            break;
+                        case 'Delay':
+                            this.nodes.delay.delayTime.value = value / 100 * 1.0;
+                            break;
+                        case 'Feedback':
+                            this.nodes.feedback.gain.value = (value / 100) * 0.7;
+                            break;
+                    }
+                }
+            },
+            eq: {
+                nodes: null,
+                enabled: false,
+                create: function(audioContext) {
+                    const filters = [100, 200, 400, 800, 1600, 3200].map(freq => {
+                        const filter = audioContext.createBiquadFilter();
+                        filter.type = 'peaking';
+                        filter.frequency.value = freq;
+                        filter.Q.value = 1;
+                        filter.gain.value = 0;
+                        return filter;
+                    });
+                    
+                    filters.reduce((prev, curr) => {
+                        prev.connect(curr);
+                        return curr;
+                    });
+                    
+                    return {
+                        input: filters[0],
+                        filters,
+                        output: filters[filters.length - 1]
+                    };
+                },
+                updateParams: function(label, value) {
+                    if (!this.nodes) return;
+                    
+                    const index = ['100Hz', '200Hz', '400Hz', '800Hz', '1.6kHz', '3.2kHz'].indexOf(label);
+                    if (index !== -1) {
+                        const gainValue = (value / 100) * 18; 
+                        this.nodes.filters[index].gain.value = gainValue;
+                    }
+                }
+            },
+            phaser: {
+                nodes: null,
+                enabled: false,
+                create: function(audioContext) {
+                    const input = audioContext.createGain();
+                    const output = audioContext.createGain();
+                    const wetGain = audioContext.createGain();
+                    const dryGain = audioContext.createGain();
+                    
+                    const lfo = audioContext.createOscillator();
+                    const lfoGain = audioContext.createGain();
+                    
+                    const filters = Array(8).fill().map(() => {
+                        const filter = audioContext.createBiquadFilter();
+                        filter.type = 'allpass';
+                        filter.frequency.value = 1000;
+                        filter.Q.value = 1.5; 
+                        return filter;
+                    });
+                    
+                    lfo.type = 'sine';
+                    lfo.frequency.value = 0.4;
+                    lfoGain.gain.value = 1000; 
+                    
+                    const limiter = audioContext.createDynamicsCompressor();
+                    limiter.threshold.value = -6.0;
+                    limiter.knee.value = 0.0;
+                    limiter.ratio.value = 20.0;
+                    limiter.attack.value = 0.001;
+                    limiter.release.value = 0.1;
+                    
+                    lfo.connect(lfoGain);
+                    filters.forEach(filter => {
+                        lfoGain.connect(filter.frequency);
+                    });
+                    
+                    filters.reduce((prev, curr) => {
+                        prev.connect(curr);
+                        return curr;
+                    });
+                    
+                    input.connect(dryGain);
+                    input.connect(filters[0]);
+                    filters[filters.length - 1].connect(limiter);
+                    limiter.connect(wetGain);
+                    
+                    dryGain.connect(output);
+                    wetGain.connect(output);
+                    
+                    dryGain.gain.value = 0.5;
+                    wetGain.gain.value = 0.5;
+                    
+                    lfo.start();
+                    
+                    return {
+                        input,
+                        output,
+                        lfo,
+                        lfoGain,
+                        filters,
+                        wetGain,
+                        dryGain,
+                        limiter
+                    };
+                },
+                updateParams: function(label, value) {
+                    if (!this.nodes) return;
+                    
+                    switch (label) {
+                        case 'Speed':
+                            const speedVal = value / 100;
+                            let newFreq;
+                            if (speedVal < 0.3) {
+                                newFreq = speedVal * 0.5; 
+                            } else if (speedVal > 0.7) {
+                                newFreq = 4 + (speedVal * 4); 
+                            } else {
+                                newFreq = 0.15 + (speedVal * 0.5); 
+                            }
+                            
+                            this.nodes.lfo.frequency.setTargetAtTime(
+                                newFreq,
+                                this.nodes.lfo.context.currentTime,
+                                0.1
+                            );
+                            break;
+                            
+                        case 'Depth':
+                            const depthValue = Math.min((value / 100) * 1500, 1500);
+                            this.nodes.lfoGain.gain.setTargetAtTime(
+                                depthValue,
+                                this.nodes.lfo.context.currentTime,
+                                0.1
+                            );
+                            break;
+                            
+                        case 'Mix':
+                            const wetAmount = Math.min(value / 100, 0.8); 
+                            this.nodes.wetGain.gain.setTargetAtTime(wetAmount, this.nodes.lfo.context.currentTime, 0.1);
+                            this.nodes.dryGain.gain.setTargetAtTime(1 - wetAmount, this.nodes.lfo.context.currentTime, 0.1);
+                            break;
+                            
+                        case 'Feedback':
+                            const qValue = 1.0 + (value / 100) * 2.5; 
+                            this.nodes.filters.forEach(filter => {
+                                filter.Q.setTargetAtTime(
+                                    qValue,
+                                    this.nodes.lfo.context.currentTime,
+                                    0.1
+                                );
+                            });
+                            break;
+                    }
+                }
+            },
+            reverb: {
+                nodes: null,
+                enabled: false,
+                create: function(audioContext) {
+                    const input = audioContext.createGain();
+                    const output = audioContext.createGain();
+                    const wetGain = audioContext.createGain();
+                    const dryGain = audioContext.createGain();
+                    
+                    const convolver = audioContext.createConvolver();
+                    
+                    const length = audioContext.sampleRate * 2; 
+                    const impulse = audioContext.createBuffer(2, length, audioContext.sampleRate);
+                    
+                    for (let channel = 0; channel < 2; channel++) {
+                        const channelData = impulse.getChannelData(channel);
+                        for (let i = 0; i < length; i++) {
+                            channelData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioContext.sampleRate * 0.5));
+                        }
+                    }
+                    
+                    convolver.buffer = impulse;
+                    
+                    input.connect(dryGain);     
+                    input.connect(convolver);   
+                    convolver.connect(wetGain);
+                    
+                    dryGain.connect(output);
+                    wetGain.connect(output);
+                    
+                    dryGain.gain.value = 0.7;
+                    wetGain.gain.value = 0.3;
+                    
+                    return {
+                        input,
+                        output,
+                        convolver,
+                        wetGain,
+                        dryGain
+                    };
+                },
+                updateParams: function(label, value) {
+                    if (!this.nodes) return;
+                    
+                    switch (label) {
+                        case 'Mix':
+                            const wetAmount = (value / 100) * 0.5;  
+                            this.nodes.wetGain.gain.setTargetAtTime(wetAmount, this.nodes.wetGain.context.currentTime, 0.1);
+                            this.nodes.dryGain.gain.setTargetAtTime(1 - wetAmount, this.nodes.dryGain.context.currentTime, 0.1);
+                            break;
+                            
+                        case 'Decay':
+                            const length = Math.floor((value / 100) * 2 * this.nodes.convolver.context.sampleRate);
+                            const impulse = this.nodes.convolver.context.createBuffer(2, length, this.nodes.convolver.context.sampleRate);
+                            
+                            for (let channel = 0; channel < 2; channel++) {
+                                const channelData = impulse.getChannelData(channel);
+                                for (let i = 0; i < length; i++) {
+                                    channelData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (length * 0.5));
+                                }
+                            }
+                            this.nodes.convolver.buffer = impulse;
+                            break;
+                            
+                        case 'Tone':
+                            break;
+                    }
+                }
+            }
+        };
+
+        async function setupAudio() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false,
+                        latency: 0,
+                        channelCount: 2,
+                        sampleRate: 44100,
+                        googAutoGainControl: false,
+                        googNoiseSuppression: false,
+                        googHighpassFilter: false,
+                        googTypingNoiseDetection: false,
+                        googAudioMirroring: false
+                    },
+                });
+
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContext({
+                    latencyHint: 'interactive',
+                    sampleRate: 44100,
+                    powerPreference: 'high-performance'
+                });
+
+                sourceNode = audioContext.createMediaStreamSource(stream);
+                const merger = audioContext.createChannelMerger(2);
+                const output = audioContext.createGain();
+                
+                const destinationNode = audioContext.createMediaStreamDestination();
+                
+                output.gain.setValueAtTime(1.0, audioContext.currentTime);
+                
+                sourceNode.connect(merger, 0, 0);
+                sourceNode.connect(merger, 0, 1);
+                merger.connect(output);
+
+                analyzerNode = audioContext.createAnalyser();
+                analyzerNode.fftSize = 128;
+                analyzerNode.smoothingTimeConstant = 0;
+                
+                output.connect(analyzerNode);
+                output.connect(destinationNode);
+                
+                if (livePlaybackEnabled) {
+                    output.connect(audioContext.destination);
+                }
+
+                Object.values(audioChain).forEach(effect => {
+                    if (effect.create) {
+                        effect.nodes = effect.create(audioContext);
+                    }
+                });
+
+                window.audioNodes = {
+                    audioContext,
+                    sourceNode,
+                    merger,
+                    output,
+                    analyzerNode,
+                    destinationNode  
+                };
+
+                const bufferLength = analyzerNode.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+
+                if (audioContext.state !== 'running') {
+                    await audioContext.resume();
+                }
+
+                statusText.textContent = `Status: Audio Active (Sample Rate: 44.1kHz)`; 
+                
+                recordButton.disabled = false;
+                livePlaybackButton.disabled = false;
+
+                visualize();
+                updateLatencyDisplay();
+
+            } catch (error) {
+                console.error('Error accessing audio input:', error);
+                statusText.textContent = 'Status: Error accessing audio input. Please ensure microphone permissions are granted.';
+            }
+        }
+
+        // DISTORTION
+        function makeDistortionCurve(amount) {
+            const k = typeof amount === 'number' ? amount : 50;
+            const n_samples = 44100;
+            const curve = new Float32Array(n_samples);
+            const deg = Math.PI / 180;
+            for (let i = 0; i < n_samples; ++i) {
+                const x = (i * 2) / n_samples - 1;
+                curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+            }
+            return curve;
+        }
+        const distortionButton = document.querySelector('.distortion .circle'); // On/Off button
+        let distortionEnabled = false;
+   
+
+
+
+
+        // Visualize the input signal
+        function visualize() {
+            const WIDTH = visualizerCanvas.width;
+            const HEIGHT = visualizerCanvas.height;
+            let animationFrame;
+
+            function draw() {
+                animationFrame = requestAnimationFrame(draw);
+
+                if (document.hidden) return;
+
+                analyzerNode.getByteTimeDomainData(dataArray);
+
+                canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+                canvasCtx.lineWidth = 2;
+                canvasCtx.strokeStyle = '#00ff00';
+                canvasCtx.beginPath();
+
+                const sliceWidth = WIDTH / dataArray.length;
+                let x = 0;
+
+                for (let i = 0; i < dataArray.length; i += 2) { 
+                    const v = dataArray[i] / 128.0;
+                    const y = v * HEIGHT / 2;
+
+                    if (i === 0) {
+                        canvasCtx.moveTo(x, y);
+                    } else {
+                        canvasCtx.lineTo(x, y);
+                    }
+
+                    x += sliceWidth * 2;
+                }
+
+                canvasCtx.lineTo(WIDTH, HEIGHT / 2);
+                canvasCtx.stroke();
+            }
+
+            draw();
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                } else {
+                    draw();
+                }
+            });
+        }
+
+        function toggleLivePlayback() {
+            if (livePlaybackEnabled) {
+                sourceNode.disconnect(audioContext.destination);
+                livePlaybackButton.textContent = 'Enable Live Playback';
+                statusText.textContent = 'Status: Live playback disabled.';
+            } else {
+                sourceNode.connect(audioContext.destination);
+                livePlaybackButton.textContent = 'Disable Live Playback';
+                statusText.textContent = 'Status: Live playback enabled.';
+            }
+            livePlaybackEnabled = !livePlaybackEnabled;
+        }
+
+        startButton.addEventListener('click', () => {
+            setupAudio();
+            startButton.disabled = true;
+            statusText.textContent = 'Status: Starting audio...';
+        });
+
+        recordButton.addEventListener('click', () => {
+            const { destinationNode } = window.audioNodes;
+
+            if (!destinationNode) {
+                console.error('Destination node is not initialized.');
+                statusText.textContent = 'Error: Cannot record. Audio destination not set.';
+                return;
+            }
+
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                audioChunks = [];
+                
+                try {
+                    mediaRecorder = new MediaRecorder(destinationNode.stream, {
+                        mimeType: 'audio/webm;codecs=opus'
+                    });
+                    
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            audioChunks.push(event.data);
+                        }
+                    };
+                    
+                    mediaRecorder.onstop = () => {
+                        if (audioChunks.length > 0) {
+                            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                            recordedAudio = new Audio(URL.createObjectURL(blob));
+                            recordedAudio.controls = true;
+                            statusText.textContent = 'Status: Recording stopped. Ready to play.';
+                            playButton.disabled = false;
+                        } else {
+                            console.error('No audio data recorded.');
+                            statusText.textContent = 'Error: No audio data recorded.';
+                        }
+                    };
+
+                    mediaRecorder.start(100); 
+                    recordButton.disabled = true;
+                    stopButton.disabled = false;
+                    playButton.disabled = true;
+                    statusText.textContent = 'Status: Recording...';
+                    
+                } catch (error) {
+                    console.error('MediaRecorder error:', error);
+                    statusText.textContent = `Error: Could not initialize recorder - ${error.message}`;
+                }
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                recordButton.disabled = false;
+                stopButton.disabled = true;
+                statusText.textContent = 'Status: Stopping recording...';
+            }
+        });
+
+        playButton.addEventListener('click', () => {
+            if (recordedAudio) {
+                recordedAudio.play();
+                statusText.textContent = 'Status: Playing recording.';
+            } else {
+                statusText.textContent = 'Status: No recording to play.';
+            }
+        });
+
+
+        livePlaybackButton.addEventListener('click', () => {
+            const { output, audioContext } = window.audioNodes;
+
+            if (!output || !audioContext) return;
+
+            Promise.resolve().then(() => {
+                if (livePlaybackEnabled) {
+                    output.disconnect(audioContext.destination);
+                } else {
+                    output.connect(audioContext.destination);
+                }
+                
+                livePlaybackEnabled = !livePlaybackEnabled;
+                livePlaybackButton.textContent = livePlaybackEnabled ? 'Disable Live Playback' : 'Enable Live Playback';
+                statusText.textContent = `Status: Live playback ${livePlaybackEnabled ? 'enabled' : 'disabled'}.`;
+            });
+        });
+
+    
+
+        // PEDALBOARD
+        // Function for EQ sliders
+        document.querySelectorAll('.eq-slider').forEach(slider => {
+            const handle = slider.querySelector('.slider-handle');
+            const track = slider.querySelector('.slider-track');
+            let isDragging = false;
+
+            slider.addEventListener('mousedown', () => {
+                document.body.classList.add('noselect');
+                isDragging = true;
+                document.body.style.cursor = 'pointer';
+            });
+
+            document.addEventListener('mousemove', (event) => {
+                document.body.classList.add('noselect');
+                if (!isDragging) return;
+
+                const rect = track.getBoundingClientRect();
+                let y = event.clientY - rect.top;
+
+                const handleHeight = handle.offsetHeight;
+                y = Math.max(0, Math.min(rect.height - handleHeight, y));
+
+                handle.style.bottom = `${rect.height - y - handleHeight}px`;
+                const normalizedY = (rect.height - y) / rect.height; 
+                const value = Math.round((normalizedY * 36) - 18); 
+
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    document.body.style.cursor = 'default';
+                    document.body.classList.remove('noselect');
+                }
+            });
+        });
+
+
+        document.querySelectorAll('.knob').forEach(knob => {
+            const knobLine = knob.querySelector('.knob-line');
+            const valueDisplay = knob.querySelector('.value span');
+            const label = knob.dataset.label;
+
+            const min = parseFloat(knob.dataset.min) || 0;
+            const max = parseFloat(knob.dataset.max) || 100;
+            const step = parseFloat(knob.dataset.step) || 1;
+            const defaultValue = parseFloat(knob.dataset.default) || min;
+
+            let value = defaultValue;
+            let isDragging = false;
+            let lastY = 0;
+
+            function valueToAngle(val) {
+                const normalized = (val - min) / (max - min);
+                return normalized * 270 - 135; // -135 to +135 degrees
+            }
+
+            const initialAngle = valueToAngle(value);
+            knobLine.style.transform = `rotate(${initialAngle}deg)`;
+            valueDisplay.textContent = value.toFixed(step % 1 === 0 ? 0 : 2);
+
+            knob.addEventListener('mousedown', (event) => {
+                isDragging = true;
+                lastY = event.clientY;
+                document.body.style.cursor = 'n-resize';
+            });
+
+            document.addEventListener('mousemove', (event) => {
+                if (!isDragging) return;
+
+                const deltaY = lastY - event.clientY;
+                lastY = event.clientY;
+
+                value += (deltaY * 2) > 0 ? step : -step;
+                value = Math.max(min, Math.min(max, value));
+
+                const angle = valueToAngle(value);
+                knobLine.style.transform = `rotate(${angle}deg)`;
+
+                valueDisplay.textContent = value.toFixed(step % 1 === 0 ? 0 : 2);
+
+                updatePedalParameter(knob, label, value);
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    document.body.style.cursor = 'default';
+                }
+            });
+        });
+
+        // On/Off toggle with LED indicator for all pedals
+        const allCircles = document.querySelectorAll('.circle');
+        const allLeds = document.querySelectorAll('.led');
+
+        allCircles.forEach((circle, index) => {
+            circle.addEventListener('click', function () {
+                allLeds[index].classList.toggle('active'); 
+            });
+        });
+
+        // Pedal Drag and Drop functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const pedalboard = document.querySelector('.pedalboard');
+            const pedals = document.querySelectorAll('.pedal');
+            
+            let draggedPedal = null;
+            let placeholder = null;
+            let initialX = 0;
+            let initialY = 0;
+
+            function createPlaceholder() {
+                const div = document.createElement('div');
+                div.className = 'pedal-placeholder';
+                return div;
+            }
+
+            function updatePedalOrder() {
+                const newOrder = Array.from(pedalboard.children)
+                    .filter(el => el.classList.contains('pedal'))
+                    .map(pedal => pedal.querySelector('h2').textContent.toLowerCase());
+                
+                console.log('New pedal order:', newOrder);
+            }
+
+            pedals.forEach(pedal => {
+                pedal.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('.knob, .circle, .eq-slider')) return; 
+                    
+                    draggedPedal = pedal;
+                    placeholder = createPlaceholder();
+                    
+                    const rect = pedal.getBoundingClientRect();
+                    initialX = e.clientX - rect.left;
+                    initialY = e.clientY - rect.top;
+                    
+                    pedal.parentNode.insertBefore(placeholder, pedal);
+                    pedal.classList.add('dragging');
+                    
+                    pedal.style.position = 'absolute';
+                    pedal.style.zIndex = '1000';
+                    movePedalToPosition(e);
+                });
+            });
+
+            function movePedalToPosition(e) {
+                if (!draggedPedal) return;
+                
+                const x = e.clientX - initialX;
+                const y = e.clientY - initialY;
+                
+                draggedPedal.style.left = `${x}px`;
+                draggedPedal.style.top = `${y}px`;
+                
+                const closestPedal = findClosestPedal(e.clientX);
+                if (closestPedal) {
+                    const rect = closestPedal.getBoundingClientRect();
+                    const insertAfter = e.clientX > rect.left + rect.width / 2;
+                    
+                    if (insertAfter) {
+                        closestPedal.parentNode.insertBefore(placeholder, closestPedal.nextSibling);
+                    } else {
+                        closestPedal.parentNode.insertBefore(placeholder, closestPedal);
+                    }
+                }
+            }
+
+            function findClosestPedal(x) {
+                const pedals = Array.from(document.querySelectorAll('.pedal:not(.dragging)'));
+                return pedals.reduce((closest, pedal) => {
+                    const rect = pedal.getBoundingClientRect();
+                    const offset = x - (rect.left + rect.width / 2);
+                    
+                    if (!closest || Math.abs(offset) < Math.abs(closest.offset)) {
+                        return { element: pedal, offset };
+                    }
+                    return closest;
+                }, null)?.element;
+            }
+
+            document.addEventListener('mousemove', (e) => {
+                if (draggedPedal) {
+                    e.preventDefault();
+                    movePedalToPosition(e);
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (draggedPedal) {
+                    draggedPedal.classList.remove('dragging');
+                    draggedPedal.style.position = '';
+                    draggedPedal.style.left = '';
+                    draggedPedal.style.top = '';
+                    draggedPedal.style.zIndex = '';
+                    
+                    if (placeholder && placeholder.parentNode) {
+                        placeholder.parentNode.insertBefore(draggedPedal, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+                    }
+                    
+                    updatePedalOrder();
+                    draggedPedal = null;
+                    placeholder = null;
+                }
+            });
+        });
+
+        function updateAudioChain() {
+            const { audioContext, sourceNode, merger, output, analyzerNode, destinationNode } = window.audioNodes;
+            if (!audioContext || !sourceNode) return;
+
+            sourceNode.disconnect();
+            merger.disconnect();
+            output.disconnect();
+
+            sourceNode.connect(merger, 0, 0);
+            sourceNode.connect(merger, 0, 1);
+
+            const activeEffects = Array.from(document.querySelectorAll('.pedal'))
+                .filter(pedal => pedal.querySelector('.led').classList.contains('active'))
+                .map(pedal => ({
+                    type: pedal.querySelector('h2').textContent.toLowerCase()
+                }));
+
+            if (activeEffects.length === 0) {
+                merger.connect(output);
+            } else {
+                let currentNode = merger;
+
+                activeEffects.forEach(({ type }) => {
+                    const effect = audioChain[type];
+                    if (effect && effect.nodes) {
+                        currentNode.connect(effect.nodes.input);
+                        currentNode = effect.nodes.output;
+                    }
+                });
+
+                currentNode.connect(output);
+            }
+
+            output.connect(analyzerNode);
+            output.connect(destinationNode);
+            
+            if (livePlaybackEnabled) {
+                output.connect(audioContext.destination);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.pedal').forEach(pedal => {
+                const pedalType = pedal.querySelector('h2').textContent.toLowerCase();
+                const circle = pedal.querySelector('.circle');
+                const led = pedal.querySelector('.led');
+                
+                if (circle && led) {
+                    circle.addEventListener('click', function() {
+                        const effect = audioChain[pedalType];
+                        if (effect) {
+                            effect.enabled = !effect.enabled;
+                            
+                            if (effect.enabled) {
+                                led.classList.add('active');
+                                circle.style.background = 'linear-gradient(145deg, #00e676, #00c853)';
+                                
+                                if (effect.nodes) {
+                                    switch (pedalType) {
+                                        case 'distortion':
+                                            effect.nodes.distortion.curve = makeDistortionCurve(200);
+                                            effect.nodes.tone.frequency.value = 2550;
+                                            effect.nodes.level.gain.value = 0.5;
+                                            updateKnobDisplay(pedal, 'Gain', 200);
+                                            updateKnobDisplay(pedal, 'Tone', 2550);
+                                            updateKnobDisplay(pedal, 'Level', 6);
+                                            break;
+
+                                        case 'delay':
+                                            effect.nodes.delay.delayTime.value = 0.5;
+                                            effect.nodes.feedback.gain.value = 0.5;
+                                            effect.nodes.wetGain.gain.value = 0.5;
+                                            effect.nodes.dryGain.gain.value = 0.5;
+                                            updateKnobDisplay(pedal, 'Fx Level', 50);
+                                            updateKnobDisplay(pedal, 'Delay', 50);
+                                            updateKnobDisplay(pedal, 'Feedback', 50);
+                                            break;
+
+                                        case 'eq':
+                                            effect.nodes.filters.forEach((filter, index) => {
+                                                filter.gain.value = 0;
+                                                const slider = pedal.querySelectorAll('.eq-slider')[index];
+                                                if (slider) {
+                                                    const handle = slider.querySelector('.slider-handle');
+                                                    handle.style.bottom = '50%';
+                                                }
+                                            });
+                                            break;
+
+                                        case 'phaser':
+                                            effect.nodes.lfo.frequency.value = 0.5;
+                                            effect.nodes.lfoGain.gain.value = 1000;
+                                            effect.nodes.wetGain.gain.value = 0.5;
+                                            effect.nodes.dryGain.gain.value = 0.5;
+                                            updateKnobDisplay(pedal, 'Speed', 50);
+                                            updateKnobDisplay(pedal, 'Depth', 50);
+                                            updateKnobDisplay(pedal, 'Feedback', 50);
+                                            updateKnobDisplay(pedal, 'Mix', 50);
+                                            break;
+
+                                        case 'reverb':
+                                            effect.nodes.wetGain.gain.value = 0.3;
+                                            effect.nodes.dryGain.gain.value = 0.7;
+                                            updateKnobDisplay(pedal, 'Mix', 30);
+                                            updateKnobDisplay(pedal, 'Decay', 50);
+                                            updateKnobDisplay(pedal, 'Tone', 50);
+                                            break;
+                                    }
+                                }
+                            } else {
+                                led.classList.remove('active');
+                                circle.style.background = 'linear-gradient(145deg, #444, #333)';
+                                
+                                if (effect.nodes) {
+                                    switch (pedalType) {
+                                        case 'distortion':
+                                            effect.nodes.distortion.curve = null;
+                                            effect.nodes.level.gain.value = 1.0;
+                                            break;
+
+                                        case 'delay':
+                                            effect.nodes.wetGain.gain.value = 0;
+                                            effect.nodes.feedback.gain.value = 0;
+                                            break;
+
+                                        case 'eq':
+                                            effect.nodes.filters.forEach(filter => {
+                                                filter.gain.value = 0;
+                                            });
+                                            break;
+
+                                        case 'phaser':
+                                            effect.nodes.wetGain.gain.value = 0;
+                                            effect.nodes.lfoGain.gain.value = 0;
+                                            break;
+
+                                        case 'reverb':
+                                            effect.nodes.wetGain.gain.value = 0;
+                                            break;
+                                    }
+                                }
+                            }
+                            
+                            updateAudioChain();
+                        }
+                    });
+                }
+            });
+        });
+
+        function updateKnobDisplay(pedal, label, value) {
+            const knob = Array.from(pedal.querySelectorAll('.knob'))
+                .find(k => k.dataset.label === label);
+            
+            if (knob) {
+                const valueDisplay = knob.querySelector('.value span');
+                const knobLine = knob.querySelector('.knob-line');
+                if (valueDisplay) valueDisplay.textContent = value;
+                
+                if (knobLine) {
+                    const min = parseFloat(knob.dataset.min);
+                    const max = parseFloat(knob.dataset.max);
+                    const normalized = (value - min) / (max - min);
+                    const angle = normalized * 270 - 135;
+                    knobLine.style.transform = `rotate(${angle}deg)`;
+                }
+            }
+        }
+
+        function checkAudioConnections() {
+            const { audioContext, sourceNode, merger, output } = window.audioNodes;
+            console.log('Audio Context State:', audioContext.state);
+            console.log('Source Node:', sourceNode);
+            console.log('Merger Node:', merger);
+            console.log('Output Node:', output);
+            
+            document.querySelectorAll('.pedal').forEach(pedal => {
+                const type = pedal.querySelector('h2').textContent.toLowerCase();
+                const isActive = pedal.querySelector('.led').classList.contains('active');
+                console.log(`${type} pedal:`, isActive ? 'active' : 'inactive');
+            });
+        }
+
+        window.debugAudio = checkAudioConnections;
+
+        function updatePedalParameter(pedal, label, value) {
+            const pedalType = pedal.closest('.pedal').querySelector('h2').textContent.toLowerCase();
+            const effect = audioChain[pedalType];
+            
+            if (effect && effect.updateParams) {
+                effect.updateParams(label, value);
+            }
+        }
+
+        // tuner constants and variables
+        window.tunerEnabled = false;
+        window.tunerAnalyzer = null;
+        window.lastFrequencies = [];
+        window.FREQUENCY_HISTORY = 5;
+        window.lastNote = '';
+        window.noteStableCount = 0;
+        window.STABLE_THRESHOLD = 3;
+
+        window.GUITAR_NOTES = {
+            'E2': { freq: 82.41, range: 15, weight: 1.0 },
+            'A2': { freq: 110.00, range: 15, weight: 1.0 },
+            'D3': { freq: 146.83, range: 20, weight: 1.1 },
+            'G3': { freq: 196.00, range: 25, weight: 1.2 },
+            'B3': { freq: 246.94, range: 30, weight: 1.3 },
+            'E4': { freq: 329.63, range: 35, weight: 1.4 }
+        };
+
+        window.A4_FREQ = 440;
+        window.A4_INDEX = 69;
+        window.NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+        // pitch detection function
+        window.detectPitch = function(buffer) {
+            const sampleRate = audioContext.sampleRate;
+            const bufferLength = buffer.length;
+            
+            const minFreq = 75;  
+            const maxFreq = 400;
+            
+            const minPeriod = Math.floor(sampleRate / maxFreq);
+            const maxPeriod = Math.floor(sampleRate / minFreq);
+            
+            let bestCorrelation = 0;
+            let bestFrequency = 0;
+            
+            let sum = 0;
+            let maxValue = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                sum += buffer[i];
+                maxValue = Math.max(maxValue, Math.abs(buffer[i]));
+            }
+            const average = sum / bufferLength;
+            
+            for (let i = 0; i < bufferLength; i++) {
+                buffer[i] = (buffer[i] - average) / maxValue;
+            }
+            
+            // find best correlation
+            for (let period = minPeriod; period <= maxPeriod; period++) {
+                let correlation = 0;
+                let correlationNorm = 0;
+                
+                for (let i = 0; i < bufferLength - period; i++) {
+                    correlation += buffer[i] * buffer[i + period];
+                    correlationNorm += buffer[i] * buffer[i] + buffer[i + period] * buffer[i + period];
+                }
+                
+                correlation = Math.abs(correlation) / Math.sqrt(correlationNorm);
+                
+                if (correlation > bestCorrelation) {
+                    bestCorrelation = correlation;
+                    bestFrequency = sampleRate / period;
+                }
+            }
+            
+            return bestCorrelation > 0.15 ? bestFrequency : 0;
+        };
+
+        window.frequencyToNote = function(frequency) {
+            window.lastFrequencies.push(frequency);
+            if (window.lastFrequencies.length > window.FREQUENCY_HISTORY) {
+                window.lastFrequencies.shift();
+            }
+            
+            let weightedSum = 0;
+            let weightSum = 0;
+            for (let i = 0; i < window.lastFrequencies.length; i++) {
+                const weight = (i + 1) / window.lastFrequencies.length;
+                weightedSum += window.lastFrequencies[i] * weight;
+                weightSum += weight;
+            }
+            
+            const smoothedFrequency = weightedSum / weightSum;
+            
+            const midiNote = 12 * Math.log2(smoothedFrequency / window.A4_FREQ) + window.A4_INDEX;
+            const midiNoteRounded = Math.round(midiNote);
+            
+            const octave = Math.floor((midiNoteRounded - 12) / 12);
+            const noteIndex = (midiNoteRounded - 12) % 12;
+            
+            const cents = Math.round((midiNote - midiNoteRounded) * 100);
+            const noteName = window.NOTES[noteIndex];
+            
+            let bestMatch = null;
+            let minDeviation = Infinity;
+            
+            for (const [note, data] of Object.entries(window.GUITAR_NOTES)) {
+                const freqRatio = smoothedFrequency / data.freq;
+                const deviation = Math.abs(1 - freqRatio) * 100 / data.weight;
+                
+                if (deviation < data.range && deviation < minDeviation) {
+                    minDeviation = deviation;
+                    bestMatch = note;
+                }
+            }
+            
+            if (octave >= 2 && octave <= 6 && bestMatch) {
+                return {
+                    note: `${noteName}${octave}`,
+                    cents: cents,
+                    confidence: 1 - (minDeviation / window.GUITAR_NOTES[bestMatch].range)
+                };
+            }
+            
+            return null;
+        };
+
+        window.updateTunerDisplay = function(frequency) {
+            const noteInfo = window.frequencyToNote(frequency);
+            if (!noteInfo) return;
+            
+            const { note, cents, confidence } = noteInfo;
+            
+            if (confidence > 0.6) {
+                if (note === window.lastNote) {
+                    window.noteStableCount++;
+                } else {
+                    window.noteStableCount = 0;
+                }
+                window.lastNote = note;
+                
+                if (window.noteStableCount >= window.STABLE_THRESHOLD) {
+                    document.getElementById('note-display').textContent = note;
+                    document.getElementById('frequency-display').textContent = `${frequency.toFixed(1)} Hz`;
+                    
+                    const barPosition = Math.max(0, Math.min(100, 50 + cents));
+                    const centsBar = document.getElementById('cents-bar');
+                    centsBar.style.left = `${barPosition}%`;
+                    
+                    if (Math.abs(cents) < 5 && confidence > 0.8) {
+                        centsBar.style.background = '#00e676';
+                    } else if (Math.abs(cents) < 15 && confidence > 0.7) {
+                        centsBar.style.background = '#ffeb3b';
+                    } else {
+                        centsBar.style.background = '#ff4444';
+                    }
+                    
+                    const trendElement = document.getElementById('frequency-trend');
+                    if (Math.abs(cents) < 2 && confidence > 0.8) {
+                        trendElement.textContent = '✓ In Tune';
+                        trendElement.style.color = '#00e676';
+                    } else if (cents < 0) {
+                        trendElement.textContent = `↑ Tune Up (${Math.abs(cents).toFixed(0)} cents flat)`;
+                        trendElement.style.color = '#ff4444';
+                    } else {
+                        trendElement.textContent = `↓ Tune Down (${cents.toFixed(0)} cents sharp)`;
+                        trendElement.style.color = '#ff4444';
+                    }
+                }
+            }
+        };
+
+        window.updateTuner = function() {
+            if (!window.tunerEnabled) return;
+            
+            const bufferLength = window.tunerAnalyzer.frequencyBinCount;
+            const dataArray = new Float32Array(bufferLength);
+            window.tunerAnalyzer.getFloatTimeDomainData(dataArray);
+            
+            const frequency = window.detectPitch(dataArray);
+            if (frequency > 0) {
+                window.updateTunerDisplay(frequency);
+            }
+            
+            if (window.tunerEnabled) {
+                requestAnimationFrame(window.updateTuner);
+            }
+        };
+
+        document.getElementById('tuner-button').addEventListener('click', function() {
+            window.tunerEnabled = !window.tunerEnabled;
+            const tunerDisplay = document.getElementById('tuner-display');
+            const tunerButton = document.getElementById('tuner-button');
+            
+            if (window.tunerEnabled) {
+                tunerButton.textContent = 'Disable Tuner';
+                tunerDisplay.style.display = 'block';
+                
+                window.tunerAnalyzer = audioContext.createAnalyser();
+                window.tunerAnalyzer.fftSize = 4096;
+                window.tunerAnalyzer.smoothingTimeConstant = 0.9;
+                
+                const preAmp = audioContext.createGain();
+                preAmp.gain.value = 2.0;
+                
+                const highPass = audioContext.createBiquadFilter();
+                highPass.type = 'highpass';
+                highPass.frequency.value = 70.0;
+                
+                const highShelf1 = audioContext.createBiquadFilter();
+                highShelf1.type = 'peaking';
+                highShelf1.frequency.value = 196.00;
+                highShelf1.Q.value = 4.0;
+                highShelf1.gain.value = 15.0;
+                
+                const highShelf2 = audioContext.createBiquadFilter();
+                highShelf2.type = 'peaking';
+                highShelf2.frequency.value = 246.94;
+                highShelf2.Q.value = 4.0;
+                highShelf2.gain.value = 20.0;
+                
+                const highShelf3 = audioContext.createBiquadFilter();
+                highShelf3.type = 'peaking';
+                highShelf3.frequency.value = 329.63;
+                highShelf3.Q.value = 4.0;
+                highShelf3.gain.value = 20.0;
+                
+                const gainNode = audioContext.createGain();
+                gainNode.gain.value = 3.0;
+                
+                sourceNode.connect(preAmp);
+                preAmp.connect(highPass);
+                highPass.connect(highShelf1);
+                highShelf1.connect(highShelf2);
+                highShelf2.connect(highShelf3);
+                highShelf3.connect(gainNode);
+                gainNode.connect(window.tunerAnalyzer);
+                
+                window.updateTuner();
+            } else {
+                tunerButton.textContent = 'Enable Tuner';
+                tunerDisplay.style.display = 'none';
+                
+                if (window.tunerAnalyzer) {
+                    sourceNode.disconnect(window.tunerAnalyzer);
+                    window.tunerAnalyzer = null;
+                }
+            }
+        });
+
+        function updateLatencyDisplay() {
+            const { audioContext } = window.audioNodes;
+            if (!audioContext) return;
+
+            const latencyValue = document.getElementById('latency-value');
+            
+            function update() {
+                if (!audioContext) return;
+                
+                const inputLatency = audioContext.baseLatency || 0;
+                const outputLatency = audioContext.outputLatency || 0;
+                const contextLatency = (inputLatency + outputLatency) * 1000;
+                
+                const activeEffects = document.querySelectorAll('.pedal .led.active').length;
+                const processingLatency = activeEffects * 2; 
+                
+                const totalLatency = contextLatency + processingLatency;
+                
+                latencyValue.textContent = `${totalLatency.toFixed(1)} ms`;
+                if (totalLatency < 10) {
+                    latencyValue.style.color = '#00e676';
+                } else if (totalLatency < 20) {
+                    latencyValue.style.color = '#ffeb3b';
+                } else {
+                    latencyValue.style.color = '#ff4444';
+                }
+                
+                requestAnimationFrame(update);
+            }
+            
+            update();
+        }
+    </script>
+</body>
+</html>
+
